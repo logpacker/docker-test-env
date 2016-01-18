@@ -1,0 +1,72 @@
+# external services
+elastic:
+  image: elasticsearch:1.7
+  container_name: elastic
+ngx_1:
+  image: nginx
+  volumes:
+    - /var/log/nginx
+ngx_2:
+  image: nginx
+  volumes:
+    - /var/log/nginx
+ngx_3:
+  image: nginx
+  volumes:
+    - /var/log/nginx
+
+# lp servers
+lp_server_1:
+  image: logpacker_service
+  command: bash -c "/opt/logpacker/logpacker -s -v -devmode -p=0.0.0.0:9995"
+#  command: bash -c "sleep 10000"
+  links:
+    - elastic
+  expose:
+    - "9995"
+    - "9998"
+    - "9999"
+lp_server_2:
+  image: logpacker_service
+  command: bash -c "/opt/logpacker/logpacker -s -v -devmode -p=0.0.0.0:9995"
+  links:
+    - elastic
+    - lp_server_1
+  expose:
+    - "9995"
+    - "9998"
+    - "9999"
+lp_server_3:
+  image: logpacker_service
+  command: bash -c "/opt/logpacker/logpacker -s -v -devmode -p=0.0.0.0:9995"
+  links:
+    - elastic
+    - lp_server_1
+    - lp_server_2
+  expose:
+    - "9995"
+    - "9998"
+    - "9999"
+
+# lp agents
+lp_agent_1:
+  image: logpacker_service
+  command: bash -c "/opt/logpacker/logpacker -a -v -devmode -p=0.0.0.0:9995"
+  volumes_from:
+   - ngx_1
+  links:
+   - lp_server_1
+lp_agent_2:
+  image: logpacker_service
+  command: bash -c "/opt/logpacker/logpacker -a -v -devmode -p=0.0.0.0:9995"
+  volumes_from:
+   - ngx_2
+  links:
+   - lp_server_1
+lp_agent_3:
+  image: logpacker_service
+  command: bash -c "/opt/logpacker/logpacker -a -v -devmode -p=0.0.0.0:9995"
+  volumes_from:
+   - ngx_3
+  links:
+   - lp_server_1

@@ -1,0 +1,24 @@
+FROM ubuntu:14.04
+MAINTAINER Andrey Sinitsyn <boombick@gmail.com>
+
+# Setup locale environment variables
+RUN locale-gen en_US.UTF-8
+ENV LANG     en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL   en_US.UTF-8
+
+# Ignore interactive
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+	apt-get install -y wget unzip curl python-pip
+
+# Install supervisor via pip for latest version
+RUN pip install supervisor
+RUN mkdir -p /opt/logpacker
+ADD final/logpacker /opt/logpacker/logpacker
+ADD supervisord-logpacker-server.ini /etc/supervisor/conf.d/logpacker.conf
+ADD supervisor.conf /etc/supervisor/supervisor.conf
+ADD random.sh /opt/random.sh
+ADD lp_service_start.sh /opt/lp_service_start.sh
+
